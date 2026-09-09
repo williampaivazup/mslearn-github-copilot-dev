@@ -3,6 +3,7 @@ using ContosoOnlineStore.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
+using System.Text;
 
 namespace ContosoOnlineStore
 {
@@ -92,33 +93,44 @@ namespace ContosoOnlineStore
             if (order == null)
                 throw new ArgumentNullException(nameof(order));
 
+            Dictionary<int, int> stockChanges;
+
             lock (_stockLock)
             {
-                var stockChanges = new Dictionary<int, int>();
+                var quantitiesByProduct = order.Items
+                    .GroupBy(item => item.ProductId)
+                    .ToDictionary(group => group.Key, group => group.Sum(item => item.Quantity));
+                stockChanges = new Dictionary<int, int>(quantitiesByProduct.Count);
 
-                foreach (OrderItem item in order.Items)
+                // Validate every product before changing any stock so the update is atomic.
+                foreach (var quantityChange in quantitiesByProduct)
                 {
-                    var currentStock = _stockByProductId.GetValueOrDefault(item.ProductId, 0);
-                    var newStock = currentStock - item.Quantity;
+                    var currentStock = _stockByProductId.GetValueOrDefault(quantityChange.Key, 0);
+                    var newStock = currentStock - quantityChange.Value;
 
                     // Security check: Prevent negative inventory if not allowed
                     if (!_appSettings.SecuritySettings.AllowNegativeInventory && newStock < 0)
                     {
-                        var availableStock = GetStockLevel(item.ProductId);
-                        throw new InsufficientInventoryException(item.ProductId, item.Quantity, availableStock);
+                        var availableStock = GetStockLevel(quantityChange.Key);
+                        throw new InsufficientInventoryException(quantityChange.Key, quantityChange.Value, availableStock);
                     }
 
-                    _stockByProductId[item.ProductId] = newStock;
-                    _lastStockUpdate[item.ProductId] = DateTime.UtcNow;
-                    stockChanges[item.ProductId] = newStock;
-
-                    _logger.LogInformation("Updated stock for product {ProductId}: {OldStock} -> {NewStock} (Change: -{Quantity})",
-                        item.ProductId, currentStock, newStock, item.Quantity);
+                    stockChanges[quantityChange.Key] = newStock;
                 }
 
-                // Performance bottleneck: Inefficient logging of all stock changes
-                LogAllStockChanges(stockChanges); // Could be optimized
+                var updateTime = DateTime.UtcNow;
+                foreach (var stockChange in stockChanges)
+                {
+                    _stockByProductId[stockChange.Key] = stockChange.Value;
+                    _lastStockUpdate[stockChange.Key] = updateTime;
+                }
+
+                _logger.LogInformation("Updated stock for {ProductCount} products in order {OrderId}",
+                    stockChanges.Count, order.OrderId);
             }
+
+            // Keep simulated logging delay out of the stock lock.
+            LogAllStockChanges(stockChanges);
         }
 
         public void ReserveStock(Order order)
@@ -211,14 +223,13 @@ namespace ContosoOnlineStore
 
         private void LogAllStockChanges(Dictionary<int, int> stockChanges)
         {
-            // Performance bottleneck: Inefficient logging implementation
-            var logMessage = "Stock changes: ";
+            var logMessage = new StringBuilder("Stock changes: ");
             foreach (var change in stockChanges)
             {
-                logMessage += $"Product {change.Key}: {change.Value} units; ";
+                logMessage.Append($"Product {change.Key}: {change.Value} units; ");
                 Thread.Sleep(1); // Simulate slow logging
             }
-            _logger.LogDebug(logMessage.TrimEnd(';', ' '));
+            _logger.LogDebug(logMessage.ToString().TrimEnd(';', ' '));
         }
     }
 }

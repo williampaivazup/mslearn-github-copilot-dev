@@ -61,19 +61,19 @@ namespace ContosoOnlineStore
             if (order == null)
                 throw new ArgumentNullException(nameof(order));
 
-            decimal subtotal = 0;
             var productCache = new Dictionary<int, Product?>();
 
+            // Load each distinct product once so calculation and validation reuse the same snapshot.
+            foreach (var productId in order.Items.Select(item => item.ProductId).Distinct())
+            {
+                Thread.Sleep(5); // Simulate database query delay
+                productCache[productId] = _catalog.GetProductById(productId);
+            }
+
+            decimal subtotal = 0;
             foreach (OrderItem item in order.Items)
             {
-                // Performance bottleneck: Individual product lookups instead of batch
-                if (!productCache.ContainsKey(item.ProductId))
-                {
-                    Thread.Sleep(5); // Simulate database query delay
-                    productCache[item.ProductId] = _catalog.GetProductById(item.ProductId);
-                }
-
-                var product = productCache[item.ProductId];
+                productCache.TryGetValue(item.ProductId, out var product);
                 if (product != null)
                 {
                     // Security validation for each item
@@ -136,15 +136,16 @@ namespace ContosoOnlineStore
                 // Update actual inventory
                 _inventory.UpdateStockLevels(order);
 
-                // Send confirmation email
-                bool emailSent = await _emailService.SendConfirmationAsync(order);
+                // Email and receipt generation are independent after inventory is updated.
+                var emailTask = _emailService.SendConfirmationAsync(order);
+                var receiptTask = GenerateOrderReceiptAsync(order);
+                await Task.WhenAll(emailTask, receiptTask);
+
+                bool emailSent = emailTask.Result;
                 if (!emailSent)
                 {
                     _logger.LogWarning("Failed to send confirmation email for order {OrderId}", order.OrderId);
                 }
-
-                // Performance bottleneck: Generate receipt immediately (could be deferred)
-                await GenerateOrderReceiptAsync(order);
 
                 order.Status = OrderStatus.Shipped; // Simulate immediate shipping for demo
 

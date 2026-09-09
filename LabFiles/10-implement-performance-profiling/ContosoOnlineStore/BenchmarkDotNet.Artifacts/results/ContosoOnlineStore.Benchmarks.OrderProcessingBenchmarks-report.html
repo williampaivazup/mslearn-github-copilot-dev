@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>ContosoOnlineStore.Benchmarks.OrderProcessingBenchmarks-20260909-204958</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.12, Ubuntu 24.04.4 LTS (Noble Numbat) (container)
+AMD EPYC 9V74, 1 CPU, 2 logical cores and 1 physical core
+.NET SDK 10.0.400
+  [Host]     : .NET 9.0.19 (9.0.1926.36724), X64 RyuJIT AVX2
+  DefaultJob : .NET 9.0.19 (9.0.1926.36724), X64 RyuJIT AVX2
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method       </th><th>Mean        </th><th>Error    </th><th>StdDev   </th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>CalculateOrderTotal</td><td>50,475,679.293 ns</td><td>38,177.7509 ns</td><td>33,843.5818 ns</td><td>-</td><td>1978 B</td>
+</tr><tr><td>ValidateOrderAsync</td><td>141,459,286.767 ns</td><td>361,419.9941 ns</td><td>338,072.4867 ns</td><td>-</td><td>2376 B</td>
+</tr><tr><td>GetAllProducts</td><td>3,115.524 ns</td><td>59.5336 ns</td><td>110.3493 ns</td><td>0.0153</td><td>272 B</td>
+</tr><tr><td>GetProductById</td><td>3.784 ns</td><td>0.1588 ns</td><td>0.4156 ns</td><td>-</td><td>-</td>
+</tr><tr><td>SearchProducts</td><td>2,832.974 ns</td><td>56.4852 ns</td><td>139.6175 ns</td><td>1.3008</td><td>21776 B</td>
+</tr><tr><td>GetLowStockProducts</td><td>221,985,740.222 ns</td><td>331,316.1582 ns</td><td>309,913.3399 ns</td><td>-</td><td>4141 B</td>
+</tr></tbody></table>
+</body>
+</html>

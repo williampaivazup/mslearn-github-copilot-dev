@@ -113,11 +113,9 @@ namespace ContosoOnlineStore.Services
                 // Simulate sending to multiple administrators
                 var adminEmails = new[] { "admin@contoso.com", "inventory@contoso.com", "manager@contoso.com" };
 
-                foreach (var adminEmail in adminEmails)
-                {
-                    await Task.Delay(100); // Performance bottleneck: Sequential email sending
-                    await LogEmailDetailsAsync("Low Stock Alert", adminEmail, emailContent);
-                }
+                var sendTasks = adminEmails.Select(adminEmail =>
+                    SendLowStockAlertToRecipientAsync(adminEmail, emailContent));
+                await Task.WhenAll(sendTasks);
 
                 _logger.LogInformation("Low stock alert emails sent successfully");
                 return true;
@@ -171,12 +169,17 @@ namespace ContosoOnlineStore.Services
             emailBuilder.AppendLine();
             emailBuilder.AppendLine("Order Details:");
 
+            var productCache = new Dictionary<int, Product?>();
+            foreach (var productId in order.Items.Select(item => item.ProductId).Distinct())
+            {
+                await Task.Delay(5); // Simulate database query
+                productCache[productId] = _catalog.GetProductById(productId);
+            }
+
             decimal totalAmount = 0;
             foreach (var item in order.Items)
             {
-                // Performance bottleneck: Individual product lookups in loop
-                await Task.Delay(5); // Simulate database query
-                var product = _catalog.GetProductById(item.ProductId);
+                productCache.TryGetValue(item.ProductId, out var product);
                 if (product != null)
                 {
                     var itemTotal = product.Price * item.Quantity;
@@ -195,6 +198,12 @@ namespace ContosoOnlineStore.Services
             emailBuilder.AppendLine("Thank you for shopping with Contoso Online Store!");
 
             return emailBuilder.ToString();
+        }
+
+        private async Task SendLowStockAlertToRecipientAsync(string recipient, string emailContent)
+        {
+            await Task.Delay(100); // Simulate email sending delay
+            await LogEmailDetailsAsync("Low Stock Alert", recipient, emailContent);
         }
 
         private async Task<string> GenerateShippingNotificationEmailAsync(Order order, string trackingNumber)

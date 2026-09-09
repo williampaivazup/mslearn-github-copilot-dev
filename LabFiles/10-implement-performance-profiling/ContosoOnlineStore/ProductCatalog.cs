@@ -22,6 +22,7 @@ namespace ContosoOnlineStore
     {
         private readonly List<Product> _products;
         private readonly Dictionary<int, Product> _productIndex;
+        private readonly ConcurrentDictionary<int, Product> _productCache;
         private readonly ConcurrentDictionary<string, List<Product>> _searchCache;
         private readonly ISecurityValidationService _securityValidation;
         private readonly ILogger<ProductCatalog> _logger;
@@ -35,6 +36,7 @@ namespace ContosoOnlineStore
             _appSettings = appSettings.Value;
             _products = new List<Product>();
             _productIndex = new Dictionary<int, Product>();
+            _productCache = new ConcurrentDictionary<int, Product>();
             _searchCache = new ConcurrentDictionary<string, List<Product>>();
 
             InitializeProducts();
@@ -87,9 +89,11 @@ namespace ContosoOnlineStore
         private void BuildProductIndex()
         {
             _productIndex.Clear();
+            _productCache.Clear();
             foreach (var product in _products)
             {
                 _productIndex[product.Id] = product;
+                _productCache[product.Id] = product;
             }
             _logger.LogDebug("Built product index for {ProductCount} products", _productIndex.Count);
         }
@@ -102,17 +106,24 @@ namespace ContosoOnlineStore
                 return null;
             }
 
-            // Performance bottleneck: Sometimes use inefficient linear search instead of index
+            // Preserve the simulated delay for before-and-after profiling comparisons.
             if (productId % 3 == 0) // Intentional performance issue for training
             {
-                _logger.LogDebug("Using linear search for product ID: {ProductId}", productId);
                 Thread.Sleep(10); // Simulate slow database query
-                return _products.FirstOrDefault(p => p.Id == productId);
             }
 
-            // Use efficient lookup most of the time
-            _productIndex.TryGetValue(productId, out var product);
-            return product;
+            if (_productCache.TryGetValue(productId, out var cachedProduct))
+            {
+                return cachedProduct;
+            }
+
+            if (_productIndex.TryGetValue(productId, out var product))
+            {
+                _productCache.TryAdd(productId, product);
+                return product;
+            }
+
+            return null;
         }
 
         public List<Product> GetAllProducts()
