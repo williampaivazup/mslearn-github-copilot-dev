@@ -1,0 +1,30 @@
+2026-09-10 12:17:08.494 UTC | ORDER_PROCESSING_STARTED | Order: ORD-001 | Started processing order for j***@email.com
+2026-09-10 12:17:08.830 UTC | VALIDATION_FAILURE | Order: ORD-001 | Invalid payment information
+2026-09-10 12:17:08.833 UTC | ORDER_PROCESSING_STARTED | Order: ORD-002 | Started processing order for ***@***.***
+2026-09-10 12:17:08.833 UTC | VALIDATION_FAILURE | Order: ORD-002 | Invalid email format
+2026-09-10 12:17:08.833 UTC | ORDER_PROCESSING_STARTED | Order: ORD-003 | Started processing order for c***@test.com
+2026-09-10 12:17:08.835 UTC | VALIDATION_FAILURE | Order: ORD-003 | Invalid payment information
+2026-09-10 12:17:08.836 UTC | ORDER_PROCESSING_STARTED | Order: ORD-004 | Started processing order for s***@valid.com
+2026-09-10 12:17:09.007 UTC | INVENTORY_RESERVED | Order: ORD-004 | Reserved 1 item(s)
+2026-09-10 12:17:09.059 UTC | SECURITY_PAYMENT_FRAUD_DETECTED | Order: SYSTEM | Suspicious payment attempt for order ORD-004
+2026-09-10 12:18:06.340 UTC | ORDER_PROCESSING_STARTED | Order: ORD-001 | Started processing order for j***@email.com
+2026-09-10 12:18:06.502 UTC | VALIDATION_FAILURE | Order: ORD-001 | Invalid payment information
+2026-09-10 12:18:06.503 UTC | ORDER_PROCESSING_STARTED | Order: ORD-002 | Started processing order for ***@***.***
+2026-09-10 12:18:06.503 UTC | VALIDATION_FAILURE | Order: ORD-002 | Invalid email format
+2026-09-10 12:18:06.504 UTC | ORDER_PROCESSING_STARTED | Order: ORD-003 | Started processing order for c***@test.com
+2026-09-10 12:18:06.504 UTC | VALIDATION_FAILURE | Order: ORD-003 | Invalid payment information
+2026-09-10 12:18:06.504 UTC | ORDER_PROCESSING_STARTED | Order: ORD-004 | Started processing order for s***@valid.com
+2026-09-10 12:18:06.669 UTC | INVENTORY_RESERVED | Order: ORD-004 | Reserved 1 item(s)
+2026-09-10 12:18:06.723 UTC | SECURITY_PAYMENT_FRAUD_DETECTED | Order: SYSTEM | Suspicious payment attempt for order ORD-004
+2026-09-10 12:32:45.798 UTC | ORDER_PROCESSING_STARTED | Order: ORD-001 | Started processing order for j***@email.com
+2026-09-10 12:32:46.036 UTC | INVENTORY_RESERVED | Order: ORD-001 | Reserved 2 item(s)
+2026-09-10 12:32:46.241 UTC | PAYMENT_PROCESSED | Order: ORD-001 | Amount: $1059.98, Reference: PAY_20260910123246_8432
+2026-09-10 12:32:46.395 UTC | SHIPPING_SCHEDULED | Order: ORD-001 | Tracking: TRK20260910583678
+2026-09-10 12:32:46.497 UTC | NOTIFICATION_SENT | Order: ORD-001 | Type: ORDER_CONFIRMATION
+2026-09-10 12:32:46.549 UTC | NOTIFICATION_SENT | Order: ORD-001 | Type: HIGH_VALUE_ALERT
+2026-09-10 12:32:46.563 UTC | ORDER_COMPLETED | Order: ORD-001 | Order completed successfully, amount: $1059.98
+2026-09-10 12:32:46.565 UTC | VALIDATION_FAILURE | Order: ORD-002 | Invalid email format
+2026-09-10 12:32:46.565 UTC | VALIDATION_FAILURE | Order: ORD-003 | Invalid payment information
+2026-09-10 12:32:46.566 UTC | ORDER_PROCESSING_STARTED | Order: ORD-004 | Started processing order for s***@valid.com
+2026-09-10 12:32:46.718 UTC | INVENTORY_RESERVED | Order: ORD-004 | Reserved 1 item(s)
+2026-09-10 12:32:46.771 UTC | SECURITY_PAYMENT_FRAUD_DETECTED | Order: SYSTEM | Suspicious payment attempt for order ORD-004
